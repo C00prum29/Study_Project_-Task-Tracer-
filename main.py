@@ -2,7 +2,8 @@ import typer, json
 from datetime import datetime
 from pathlib import Path
 
-folder = Path("C:/Users/cprum/Desktop/Прога/Task_tracker_project/Study_Project_-Task-Tracer-")
+BASE_DIR = Path(__file__).resolve().parent
+folder = BASE_DIR / "data"
 file_path = folder / "tasks.json"
 
 folder.mkdir(parents=True, exist_ok=True)
@@ -13,8 +14,21 @@ if not file_path.exists():
 app = typer.Typer()
 
 def load_tasks():
-    with file_path.open("r", encoding="utf-8") as file:
-        return json.load(file)
+    try:
+        with file_path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+
+            if not isinstance(data, dict):
+                raise ValueError("Invalid tasks format")
+
+            return data
+
+    except (json.JSONDecodeError, ValueError):
+        print("tasks.json повреждён. Создаётся новый файл.")
+        return {}
+
+    except FileNotFoundError:
+        return {}
 
 def check_task_exists(task_id, tasks):
     if task_id not in tasks:
